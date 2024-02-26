@@ -9,6 +9,12 @@ use Symfony\Polyfill\Intl\Icu\Currencies;
 
 class Accounting extends Currency
 {
+    /**
+     * The field's component.
+     *
+     * @var string
+     */
+    public $component = 'php-nova-accounting-field';
     protected $typeCallback;
     public $inMinorUnits = true;
 
@@ -20,6 +26,7 @@ class Accounting extends Currency
         $this->typeCallback = $this->defaultTypeCallback();
 
         $this->step(0.01)
+            ->withMeta(['justify' => 'between'])
             ->currency('USD')
             ->asHtml()
             ->displayUsing(function ($value) {
@@ -33,18 +40,24 @@ class Accounting extends Currency
                     )->getMinorAmount()->toScale(2, RoundingMode::HALF_UP)->toFloat();
                 }
 
+                $this->currencySymbol = $this->currencySymbol ?? Currencies::getSymbol($this->currency);
 
-                $value = number_format(abs($value), 2);
+                $decimals = strlen(explode(".",$this->step)[1]);
+
                 $class = "text-green-500";
                 $res = ($this->typeCallback)($value);
+
+                $value = number_format(abs($value), $decimals);
                 if ($res === true) {
                     $value = "(" . $value . ")";
                     $class = "text-red-500";
                 } elseif (is_null($res)) {
                     $class = "";
                 }
-                $meta = $this->meta();
-                return view('partials.field-accounting', compact('value', 'class', 'meta'))->render();
+
+                $this->withMeta(['symbol' => $this->currencySymbol, 'class'=>$class]);
+                return $value;
+//                return view('partials.field-accounting', compact('value', 'class', 'meta'))->render();
             })
             ->fillUsing(function ($request, $model, $attribute, $requestAttribute) {
                 if ($request->has($requestAttribute)) {
@@ -78,6 +91,17 @@ class Accounting extends Currency
             if ($value == 0) return null;
             return $value < 0;
         };
+    }
+    /*
+     *
+     */
+    public function justify($direction)
+    {
+        if(!in_array($direction, ['start', 'end', 'between', 'center', 'evenly', 'around'])){
+            return $this;
+        }
+        $this->withMeta(['justify' => $direction]);
+        return $this;
     }
     /**
      * The value in database is store in minor units (cents for dollars).

@@ -1,45 +1,66 @@
 <template>
-  <DefaultField
-    :field="field"
-    :errors="errors"
-    :show-help-text="showHelpText"
-    :full-width-content="fullWidthContent"
-  >
-    <template #field>
-      <input
-        :id="field.attribute"
-        type="text"
-        class="w-full form-control form-input form-input-bordered"
-        :class="errorClasses"
-        :placeholder="field.name"
-        v-model="value"
-      />
-    </template>
-  </DefaultField>
+    <DefaultField
+        :field="currentField"
+        :errors="errors"
+        :show-help-text="showHelpText"
+        :full-width-content="fullWidthContent"
+    >
+        <template #field>
+            <div class="flex flex-wrap items-stretch w-full relative">
+                <div class="flex -mr-px">
+          <span
+              class="flex items-center leading-normal rounded rounded-r-none border border-r-0 border-gray-300 dark:border-gray-700 px-3 whitespace-nowrap bg-gray-100 dark:bg-gray-800 text-gray-500 text-sm font-bold"
+          >
+            {{ currentField.currency }}
+          </span>
+                </div>
+
+                <input
+                    class="flex-shrink flex-grow flex-auto leading-normal w-px flex-1 rounded-l-none form-control form-input form-input-bordered"
+                    :id="currentField.uniqueKey"
+                    :dusk="field.attribute"
+                    v-bind="extraAttributes"
+                    :disabled="currentlyIsReadonly"
+                    @input="handleChange"
+                    :value="value"
+                />
+            </div>
+        </template>
+    </DefaultField>
 </template>
 
 <script>
 import { FormField, HandlesValidationErrors } from 'laravel-nova'
 
+
 export default {
-  mixins: [FormField, HandlesValidationErrors],
+    mixins: [HandlesValidationErrors, FormField],
 
-  props: ['resourceName', 'resourceId', 'field'],
+    props: ['resourceName', 'resourceId', 'field'],
 
-  methods: {
-    /*
-     * Set the initial, internal value for the field.
-     */
-    setInitialValue() {
-      this.value = this.field.value || ''
+    computed: {
+        defaultAttributes() {
+            return {
+                type: 'number',
+                min: this.currentField.min,
+                max: this.currentField.max,
+                step: this.currentField.step,
+                pattern: this.currentField.pattern,
+                placeholder: this.currentField.placeholder || this.field.name,
+                class: this.errorClasses,
+            }
+        },
+        extraAttributes() {
+            const attrs = this.currentField.extraAttributes
+
+            return {
+                // Leave the default attributes even though we can now specify
+                // whatever attributes we like because the old number field still
+                // uses the old field attributes
+                ...this.defaultAttributes,
+                ...attrs,
+            }
+        },
     },
-
-    /**
-     * Fill the given FormData object with the field's internal value.
-     */
-    fill(formData) {
-      formData.append(this.fieldAttribute, this.value || '')
-    },
-  },
 }
 </script>
