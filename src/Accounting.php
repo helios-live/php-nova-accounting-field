@@ -26,7 +26,7 @@ class Accounting extends Currency
         $this->typeCallback = $this->defaultTypeCallback();
 
         $this->step(0.01)
-            ->withMeta(['justify' => 'between'])
+            ->withMeta(['justify' => config('app.accounting.justify','between')])
             ->currency('USD')
             ->asHtml()
             ->displayUsing(function ($value) {
