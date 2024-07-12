@@ -8,15 +8,15 @@
         <template #field>
             <div class="flex flex-wrap items-stretch w-full relative">
                 <div class="flex -mr-px">
-          <span
-              class="flex items-center leading-normal rounded rounded-r-none border border-r-0 border-gray-300 dark:border-gray-700 px-3 whitespace-nowrap bg-gray-100 dark:bg-gray-800 text-gray-500 text-sm font-bold"
-          >
-            {{ currentField.currency }}
-          </span>
+                    <span
+                        class="flex items-center leading-normal rounded rounded-r-none border border-r-0 border-gray-300 dark:border-gray-700 px-3 whitespace-nowrap bg-gray-100 dark:bg-gray-800 text-gray-500 text-sm font-bold"
+                    >
+                        {{ currentField.currency }}
+                    </span>
                 </div>
 
                 <input
-                    class="flex-shrink flex-grow flex-auto leading-normal w-px flex-1 rounded-l-none form-control form-input form-input-bordered"
+                    class="flex-shrink flex-grow flex-auto leading-normal w-px flex-1 rounded-l-none form-control form-input form-control-bordered"
                     :id="currentField.uniqueKey"
                     :dusk="field.attribute"
                     v-bind="extraAttributes"
@@ -30,28 +30,28 @@
 </template>
 
 <script>
-import { FormField, HandlesValidationErrors } from 'laravel-nova'
-
+import { DependentFormField, HandlesValidationErrors } from "@/mixins";
 
 export default {
-    mixins: [HandlesValidationErrors, FormField],
+    mixins: [HandlesValidationErrors, DependentFormField],
 
-    props: ['resourceName', 'resourceId', 'field'],
+    props: ["resourceName", "resourceId", "field"],
 
     computed: {
         defaultAttributes() {
+            console.log("yay", this.currentField);
             return {
-                type: 'number',
+                type: "number",
                 min: this.currentField.min,
                 max: this.currentField.max,
                 step: this.currentField.step,
                 pattern: this.currentField.pattern,
                 placeholder: this.currentField.placeholder || this.field.name,
                 class: this.errorClasses,
-            }
+            };
         },
         extraAttributes() {
-            const attrs = this.currentField.extraAttributes
+            const attrs = this.currentField.extraAttributes;
 
             return {
                 // Leave the default attributes even though we can now specify
@@ -59,8 +59,8 @@ export default {
                 // uses the old field attributes
                 ...this.defaultAttributes,
                 ...attrs,
-            }
+            };
         },
     },
-}
+};
 </script>

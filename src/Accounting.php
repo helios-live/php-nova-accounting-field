@@ -26,7 +26,7 @@ class Accounting extends Currency
         $this->typeCallback = $this->defaultTypeCallback();
 
         $this->step(0.01)
-            ->withMeta(['justify' => config('app.accounting.justify','between')])
+            ->withMeta(['justify' => config('app.accounting.justify', 'between')])
             ->currency('USD')
             ->asHtml()
             ->displayUsing(function ($value) {
@@ -42,7 +42,7 @@ class Accounting extends Currency
 
                 $this->currencySymbol = $this->currencySymbol ?? Currencies::getSymbol($this->currency);
 
-                $decimals = strlen(explode(".",$this->step)[1]);
+                $decimals = strlen(explode(".", $this->step)[1]);
 
                 $class = "text-green-500";
                 $res = ($this->typeCallback)($value);
@@ -55,9 +55,8 @@ class Accounting extends Currency
                     $class = "";
                 }
 
-                $this->withMeta(['symbol' => $this->currencySymbol, 'class'=>$class]);
+                $this->withMeta(['symbol' => $this->currencySymbol, 'class' => $class]);
                 return $value;
-//                return view('partials.field-accounting', compact('value', 'class', 'meta'))->render();
             })
             ->fillUsing(function ($request, $model, $attribute, $requestAttribute) {
                 if ($request->has($requestAttribute)) {
@@ -77,7 +76,6 @@ class Accounting extends Currency
                 }
                 $model->$attribute = $value;
             });
-
     }
 
     public function type(callable $typeCallback)
@@ -97,7 +95,7 @@ class Accounting extends Currency
      */
     public function justify($direction)
     {
-        if(!in_array($direction, ['start', 'end', 'between', 'center', 'evenly', 'around'])){
+        if (!in_array($direction, ['start', 'end', 'between', 'center', 'evenly', 'around'])) {
             return $this;
         }
         $this->withMeta(['justify' => $direction]);
@@ -106,7 +104,7 @@ class Accounting extends Currency
     /**
      * The value in database is store in minor units (cents for dollars).
      */
-    public function storedInMinorUnits($yes = true):static
+    public function storedInMinorUnits($yes = true): static
     {
         $this->inMinorUnits = $yes;
 
