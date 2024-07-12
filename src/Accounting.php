@@ -16,7 +16,7 @@ class Accounting extends Currency
      */
     public $component = 'php-nova-accounting-field';
     protected $typeCallback;
-    public $inMinorUnits = true;
+    public $inMinorUnits = false;
 
     public function __construct($name, $attribute = null, $cb = null)
     {
@@ -57,25 +57,25 @@ class Accounting extends Currency
 
                 $this->withMeta(['symbol' => $this->currencySymbol, 'class' => $class]);
                 return $value;
-            })
-            ->fillUsing(function ($request, $model, $attribute, $requestAttribute) {
-                if ($request->has($requestAttribute)) {
-                    $value = $request->$requestAttribute;
-                } else {
-                    // we are in a flexible content
-                    $key = $model->inUseKey();
-                    $attribute = $key . '__' . $requestAttribute;
-                    $value = $request->get($attribute);
-                }
-
-                if (($this->inMinorUnits || $this->minorUnits) && !$this->isValidNullValue($value)) {
-                    $value = $this->toMoneyInstance(
-                        $value * (10 ** Currencies::getFractionDigits($this->currency)),
-                        $this->currency
-                    )->getMinorAmount()->toInt();
-                }
-                $model->$attribute = $value;
             });
+        // ->fillUsing(function ($request, $model, $attribute, $requestAttribute) {
+        //     if ($request->has($requestAttribute)) {
+        //         $value = $request->$requestAttribute;
+        //     } else {
+        //         // we are in a flexible content
+        //         $key = $model->inUseKey();
+        //         $attribute = $key . '__' . $requestAttribute;
+        //         $value = $request->get($attribute);
+        //     }
+
+        // if (($this->inMinorUnits || $this->minorUnits) && !$this->isValidNullValue($value)) {
+        //     $value = $this->toMoneyInstance(
+        //         $value * (10 ** Currencies::getFractionDigits($this->currency)),
+        //         $this->currency
+        //     )->getMinorAmount()->toInt();
+        // }
+        // $model->$attribute = $value;
+        // });
     }
 
     public function type(callable $typeCallback)
