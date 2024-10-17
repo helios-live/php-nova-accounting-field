@@ -20,7 +20,7 @@
 			return f;
 		}
 		f.displayedAs =
-			'<p class="max-w-xxs flex ' +
+			'<p class="flex ' +
 			f.class +
 			" justify-" +
 			f.justify +
