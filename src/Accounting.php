@@ -26,10 +26,10 @@ class Accounting extends Currency
         $this->typeCallback = $this->defaultTypeCallback();
 
         $this->step(0.01)
-            ->withMeta(['justify' => config('app.accounting.justify', 'between')])
             ->currency('USD')
             ->asHtml()
             ->displayUsing(function ($value) {
+                $this->withMeta(['justify' => $this->transformAlign()]);
 
                 $this->context = new CustomContext(8);
                 // try {
@@ -78,11 +78,27 @@ class Accounting extends Currency
      */
     public function justify($direction)
     {
-        if (!in_array($direction, ['start', 'end', 'between', 'center', 'evenly', 'around'])) {
+        if (!in_array($direction, ['start', 'end',  'center'])) {
             return $this;
         }
-        $this->withMeta(['justify' => $direction]);
+        $revMap = [
+            'start' => 'left',
+            'end' => 'right',
+            'center' => 'center',
+        ];
+        $this->withMeta(['justify' => $direction, 'textAlign' => $revMap[$direction]]);
         return $this;
+    }
+
+    public function transformAlign()
+    {
+        $align = $this->meta['textAlign'] ?? 'right';
+        $map = [
+            'right' => 'end',
+            'left' => 'start',
+            'center' => 'center',
+        ];
+        return $map[$align];
     }
     /**
      * The value in database is store in minor units (cents for dollars).

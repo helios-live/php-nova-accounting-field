@@ -19,6 +19,7 @@
 			f.displayedAs = "—";
 			return f;
 		}
+
 		f.displayedAs =
 			'<p class="flex ' +
 			f.class +
