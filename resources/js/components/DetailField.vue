@@ -14,6 +14,7 @@
 
 	const decorated = computed(() => {
 		let f = props.field;
+
 		if (f.value == null) {
 			f.displayedAs = "—";
 			return f;
