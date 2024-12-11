@@ -15,7 +15,9 @@
 	const decorated = computed(() => {
 		let f = props.field;
 
-		if (f.value == null) {
+		var val = f.value;
+
+		if (val.value == null) {
 			f.displayedAs = "—";
 			return f;
 		}
@@ -26,7 +28,7 @@
 			" justify-" +
 			f.justify +
 			'"><span class="mr-1">' +
-			f.currency +
+			f.symbol +
 			"</span> <span>" +
 			f.displayedAs +
 			"</span></p>";

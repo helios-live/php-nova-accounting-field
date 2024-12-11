@@ -3,17 +3,25 @@
 namespace HeliosLive\PhpNovaAccountingField;
 
 use Brick\Math\RoundingMode;
-use Brick\Money\Context\CustomContext;
 use Laravel\Nova\Fields\Currency;
+use Brick\Money\Context\CustomContext;
 use Symfony\Polyfill\Intl\Icu\Currencies;
+use Laravel\Nova\Fields\Filters\TextFilter;
+use Laravel\Nova\Http\Requests\NovaRequest;
+use Laravel\Nova\Fields\Filters\NumberFilter;
+use HeliosLive\PhpNovaAccountingField\PriceWithCurrency;
 
 class Accounting extends Currency
 {
+
+    public static $globalCallback = null;
+
     /**
      * The field's component.
      *
      * @var string
      */
+
     public $component = 'php-nova-accounting-field';
     protected $typeCallback;
     public $inMinorUnits = false;
@@ -28,37 +36,69 @@ class Accounting extends Currency
         $this->step(0.01)
             ->currency('USD')
             ->asHtml()
+            ->resolveUsing(function ($value) {
+                $price = PriceWithCurrency::parse($value);
+                if (! is_null($price->currency)) {
+                    $this->currency = $price->currency;
+                }
+                return json_encode($price);
+            })
+            ->fillUsing(function ($request, $model, $attribute, $requestAttribute) {
+                $value = $request->$requestAttribute;
+
+                $price = PriceWithCurrency::parse($value);
+
+                $model->{$attribute} = $price;
+            })
             ->displayUsing(function ($value) {
+
                 $this->withMeta(['justify' => $this->transformAlign()]);
 
+                $price = PriceWithCurrency::parse($value);
+
                 $this->context = new CustomContext(8);
-                // try {
-                if ($this->inMinorUnits && !$this->isValidNullValue($value)) {
+
+
+                $value = $price->value;
+
+                $this->currency = $price->currency ?? $this->currency;
+
+                if ($this->inMinorUnits && !$this->isValidNullValue($price->value)) {
 
                     $value = $this->toMoneyInstance(
-                        $value / (10 ** Currencies::getFractionDigits($this->currency)),
+                        $price / (10 ** Currencies::getFractionDigits($this->currency)),
                         $this->currency
                     )->getMinorAmount()->toScale(2, RoundingMode::HALF_UP)->toFloat();
                 }
 
-                $this->currencySymbol = $this->currencySymbol ?? Currencies::getSymbol($this->currency);
-
                 $decimals = strlen(explode(".", $this->step)[1]);
 
-                $class = "text-green-500";
-                $res = ($this->typeCallback)($value);
 
-                $value = number_format(abs($value), $decimals);
-                if ($res === true) {
-                    $value = "(" . $value . ")";
-                    $class = "text-red-500";
-                } elseif (is_null($res)) {
-                    $class = "";
+                $formatted = number_format(abs($value), $decimals);
+                if ($price->value == 0) {
+                    return null;
                 }
 
-                $this->withMeta(['symbol' => $this->currencySymbol, 'class' => $class]);
-                return $value;
+                if ($price->value < 0) {
+                    $this->withMeta(['class' => 'text-red-500']);
+
+                    $formatted = "(" . $formatted . ")";
+                    return $formatted;
+                }
+
+                $this->withMeta(['class' => 'text-green-500']);
+                return $formatted;
             });
+        if (static::$globalCallback) {
+            call_user_func(static::$globalCallback, $this);
+        }
+    }
+
+
+    public function currencies(array $list)
+    {
+        $this->withMeta(['currencies' => $list]);
+        return $this;
     }
 
     public function type(callable $typeCallback)
@@ -108,5 +148,52 @@ class Accounting extends Currency
         $this->inMinorUnits = $yes;
 
         return $this;
+    }
+
+    /**
+     * Prepare the field for JSON serialization.
+     *
+     * @return array<string, mixed>
+     */
+    public function jsonSerialize(): array
+    {
+        return array_merge(parent::jsonSerialize(), [
+            'currency' => $this->currency,
+            'symbol' => $this->resolveCurrencySymbol(),
+        ]);
+    }
+    /**
+     * Make the field filter.
+     *
+     * @param  \Laravel\Nova\Http\Requests\NovaRequest  $request
+     * @return \Laravel\Nova\Fields\Filters\Filter
+     */
+    protected function makeFilter(NovaRequest $request)
+    {
+        return new NumberFilter($this);
+    }
+
+    /**
+     * Define the default filterable callback.
+     *
+     * @return callable(\Laravel\Nova\Http\Requests\NovaRequest, \Illuminate\Database\Eloquent\Builder, mixed, string):\Illuminate\Database\Eloquent\Builder
+     */
+    protected function defaultFilterableCallback()
+    {
+        return function (NovaRequest $request, $query, $value, $attribute) {
+            [$min, $max] = $value;
+
+            if (! is_null($min) && ! is_null($max)) {
+                return $query->whereBetween($attribute, [$min, $max]);
+            } elseif (! is_null($min)) {
+                return $query->where($attribute, '>=', $min);
+            }
+
+            return $query->where($attribute, '<=', $max);
+        };
+    }
+    public static function global($callback)
+    {
+        static::$globalCallback = $callback;
     }
 }
