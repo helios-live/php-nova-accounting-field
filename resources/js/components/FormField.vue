@@ -43,7 +43,6 @@
 					@input="handleChangeInternal"
 					v-model="parsed.value"
 				/>
-				{{ parsed }} {{ value }}
 			</div>
 		</template>
 	</DefaultField>
@@ -62,14 +61,7 @@
 			return {
 				parsed: (function () {
 					var val = JSON.parse(th.field.value);
-					if (typeof val === "object") {
-						return val;
-					} else {
-						return {
-							value: val,
-							currency: null,
-						};
-					}
+					return th.currencyField(val);
 				})(),
 			};
 		},
@@ -100,8 +92,19 @@
 			},
 		},
 		methods: {
+			currencyField(val) {
+				if (typeof val === "object") {
+					return val;
+				} else {
+					return {
+						value: val,
+						currency: null,
+					};
+				}
+			},
 			onSyncedField() {
 				var val = JSON.parse(this.syncedField.value);
+				val = this.currencyField(val);
 
 				this.parsed.value = val.value;
 				this.parsed.currency = val.currency;
