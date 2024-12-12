@@ -23,7 +23,6 @@ class CurrenciedPrice implements CastsAttributes
         if (! is_object($value)) {
             return new PriceWithCurrency($value);
         }
-        ray($value);
 
         return new PriceWithCurrency($value->value, $value->currency);
     }

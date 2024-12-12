@@ -58,8 +58,19 @@
 		props: ["resourceName", "resourceId", "field"],
 
 		data() {
+			var th = this;
 			return {
-				parsed: JSON.parse(this.field.value),
+				parsed: (function () {
+					var val = JSON.parse(th.field.value);
+					if (typeof val === "object") {
+						return val;
+					} else {
+						return {
+							value: val,
+							currency: null,
+						};
+					}
+				})(),
 			};
 		},
 		computed: {
@@ -95,19 +106,14 @@
 				this.parsed.value = val.value;
 				this.parsed.currency = val.currency;
 
-				console.error(
-					"onSyncedField",
-
-					this.parsed
-				);
-
 				this.handleChangeInternal();
 			},
 			handleChangeInternal(event) {
-				console.error(this.value);
-				this.value = JSON.stringify(this.parsed);
 				this.currentField.value = this.value;
-				console.error("changed", this.value);
+				this.value = JSON.stringify(this.parsed);
+				if (this.parsed.currency == "") {
+					this.parsed.currency = null;
+				}
 
 				// this.handleChange(event);
 
