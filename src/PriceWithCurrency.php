@@ -71,7 +71,8 @@ class PriceWithCurrency
 
     public function in($currency, $date)
     {
-        if (is_null($this->currency) || $this->currency === $currency) {
+        $from_currency = $this->currency ?? static::$default_currency;
+        if (is_null($from_currency) || $from_currency === $currency) {
             return $this->value;
         }
 
@@ -79,6 +80,6 @@ class PriceWithCurrency
             throw new \Exception('No converter set');
         }
 
-        return static::$converter->rate($this->currency, $currency, $date) * $this->value;
+        return static::$converter->rate($from_currency, $currency, $date) * $this->value;
     }
 }
