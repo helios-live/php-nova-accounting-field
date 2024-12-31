@@ -55,7 +55,7 @@ class Accounting extends Currency
                 $this->withMeta(['justify' => $this->transformAlign()]);
 
                 $price = PriceWithCurrency::parse($value);
-
+                ray(compact('price', 'value'));
                 $this->context = new CustomContext(8);
 
 
@@ -157,6 +157,10 @@ class Accounting extends Currency
      */
     public function jsonSerialize(): array
     {
+        // ray(array_merge(parent::jsonSerialize(), [
+        //     'currency' => $this->currency,
+        //     'symbol' => $this->resolveCurrencySymbol(),
+        // ]));
         return array_merge(parent::jsonSerialize(), [
             'currency' => $this->currency,
             'symbol' => $this->resolveCurrencySymbol(),

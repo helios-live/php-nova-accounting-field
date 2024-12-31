@@ -23,10 +23,14 @@ class PriceWithCurrency
     }
 
 
-    public static function parse(?string $text)
+    public static function parse(mixed $text)
     {
         if (is_null($text)) {
             return new PriceWithCurrency(null);
+        }
+
+        if ($text instanceof PriceWithCurrency) {
+            return $text;
         }
 
         $data = json_decode($text);
@@ -39,16 +43,14 @@ class PriceWithCurrency
     {
         return [
             'value' => $this->value,
-            'currency' => $this->currency,
+            'currency' => $this->currency ?? static::$default_currency,
         ];
     }
 
     public function __toString()
     {
-        if (is_null($this->currency)) {
-            return $this->value;
-        }
-        return json_encode($this->toArray());
+        $data = $this->toArray();
+        return $data['currency'] . ' ' . number_format($data['value'], 2);
     }
     public function filled(): bool
     {
