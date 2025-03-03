@@ -55,7 +55,6 @@ class Accounting extends Currency
                 $this->withMeta(['justify' => $this->transformAlign()]);
 
                 $price = PriceWithCurrency::parse($value);
-                ray(compact('price', 'value'));
                 $this->context = new CustomContext(8);
 
 
