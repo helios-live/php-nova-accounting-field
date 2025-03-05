@@ -28,11 +28,6 @@ class CurrenciedPrice implements CastsAttributes
         if (is_null($value)) {
             return null;
         }
-
-        if (empty($model->getKey())) {
-            throw new \Exception("Models must have a key");
-        }
-
         if (! is_object($value)) {
             return new PriceWithCurrency($value, null, $model, $key, $extra_currencies);
         }

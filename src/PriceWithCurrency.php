@@ -3,6 +3,7 @@
 namespace HeliosLive\PhpNovaAccountingField;
 
 use App\Models\Model;
+use Illuminate\Support\Facades\Log;
 use App\Interfaces\CurrencyConverter;
 
 class PriceWithCurrency implements \JsonSerializable
@@ -104,6 +105,10 @@ class PriceWithCurrency implements \JsonSerializable
         $rate =  static::$converter->rate($from_currency, $currency, $date) * $this->value;
 
         if ($save) {
+            if (is_null($this->model)) {
+                Log::error('Model not set while converting currency, cannot save', ['currency' => $currency, 'date' => $date]);
+                return $rate;
+            }
             $this->$currency = $rate;
 
             $attr = $this->attribute;
