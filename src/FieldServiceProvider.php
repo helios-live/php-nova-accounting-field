@@ -15,10 +15,14 @@ class FieldServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        // Nova::serving(function (ServingNova $event) {
-        //     Nova::script('php-nova-accounting-field', __DIR__.'/../dist/js/field.js');
-        //     Nova::style('php-nova-accounting-field', __DIR__.'/../dist/css/field.css');
-        // });
+        if (!class_exists('Nova')) {
+            return;
+        }
+
+        Nova::serving(function (ServingNova $event) {
+            Nova::script('php-nova-accounting-field', __DIR__ . '/../dist/js/field.js');
+            Nova::style('php-nova-accounting-field', __DIR__ . '/../dist/css/field.css');
+        });
     }
 
     /**
